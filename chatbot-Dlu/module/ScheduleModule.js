@@ -119,7 +119,7 @@ export function renderSchedule(data) {
 
         const filter = /-Môn: |-Nhóm: |-Lớp: |-Tiết: |-Phòng: |-GV: |-Đã học: /gi;
         const strFilter = value.replace(filter, function (x) {
-            return (x = ",");
+            return (x = ";");
 
           });
          return strFilter; 
@@ -152,7 +152,7 @@ export function renderSchedule(data) {
 
      function initSchedule(scheduleFilter) {
      
-        const items = scheduleFilter.split(",");
+        const items = scheduleFilter.split(";");
         // ScheduleComponent(mon,lop,tiet,phong,gv,dahoc,nhom = "");
         if (items.length >= 8) {
           

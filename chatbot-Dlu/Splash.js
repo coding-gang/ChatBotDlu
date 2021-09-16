@@ -1,6 +1,7 @@
 import React from "react";
 import {View,StyleSheet, ImageBackground,StatusBar } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; 
+import {getDataStorage} from "./Storage/dataStorage";
 const Splash =({navigation})=> {
    React.useEffect(()=>{
      StatusBar.setHidden(true);
@@ -10,10 +11,22 @@ const Splash =({navigation})=> {
              setTimeout(() => {
                 navigation.navigate('OnboardingScreen');
             }, 3000);
-            }else{
-                setTimeout(() => {
-                    navigation.navigate('MessageBot');
-                }, 3000);
+            }else{           
+                let items =[];
+                getDataStorage().then(stores =>{
+                    stores.map( (result,i,store)=>{   
+                    if (store[i][1] !== null){
+                     items = JSON.parse(store[i][1]);     
+                    setTimeout(() => {
+                        navigation.navigate('MessageBot',{items});
+                    }, 2000);     
+                    }else{
+                        setTimeout(() => {
+                            navigation.navigate('MessageBot',{items});
+                        }, 2000);
+                    }
+                })   
+                  });         
             }
      })
     },[]);

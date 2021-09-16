@@ -3,9 +3,9 @@ import {Image} from "react-native";
 import Onboarding from "react-native-onboarding-swiper";
 
 const OnboardingScreen = ({navigation})=>{
-       
-   return( <Onboarding onSkip={()=> navigation.navigate('MessageBot')}
-                       onDone={()=> navigation.navigate('MessageBot')}
+     const items =[];
+   return( <Onboarding onSkip={()=> navigation.navigate('MessageBot',{items})}
+                       onDone={()=> navigation.navigate('MessageBot',{items})}
                        nextLabel ={"Tiếp tục"} skipLabel={"Bỏ qua"}
     pages={[
         {

@@ -34,6 +34,7 @@ import {getDataStorage,setDataStorage,removeDataStorage,
     responsiveWidth,
     responsiveFontSize
   } from "react-native-responsive-dimensions";
+import { thisExpression } from '@babel/types';
 
 
   // socket-client
@@ -55,17 +56,19 @@ class MessageBot extends React.Component {
       updateMSSV:false,
       confirmUpdate: NO
      };
+    
      //https://chatbot-dlu.herokuapp.com
     this.socket = io("https://chatbot-dlu.herokuapp.com", {
       transports: ["websocket", "polling", "flashsocket"],
       jsonp: false,
     });
-
+   
     this.socket.on("connect", () => {
-        console.log("socket connected from server chatbot-dlu");   
+     
+        console.log("socket connected from server chatbot-dlu");
       });
-    
     this.socket.on("send-schedule", (data) => {
+      
       if(Array.isArray(data)){
           const messageBots= renderSchedule(data);
           messageBots.forEach(e=>{
@@ -75,23 +78,11 @@ class MessageBot extends React.Component {
        this.renderFromBot(data);
       }
     });
- 
-     getDataStorage().then(stores =>{
-        stores.map( (result,i,store)=>{   
-        if (store[i][1] !== null){
-        let items = JSON.parse(store[i][1]);  
-        items.forEach(el =>{
-          this.state.arrMessage.push(el);
-          this.add_view();
-        })
-         
-        }
-    })
-    this.sendHelper();    
-      });
+    const {items} = this.props.route.params;
+    this.state.arrMessage = items;
+    this.sendHelper(); 
     }
-    
-
+  
     sendHelper(){
       if(this.state.arrMessage.length === 0){
         this.SendScheduleBot("hỗ trợ");
@@ -209,14 +200,13 @@ class MessageBot extends React.Component {
     getMSSVDataStorage().then(kq =>{
       const existMssv = checkExistMssv(kq);
       if(existMssv === null){
-        this.renderFromBot("Bạn phải cung cấp MSSV trước khi xem thời khóa biểu(vd:1812866)!");
+        this.renderFromBot("Bạn phải cung cấp MSSV trước khi xem thời khóa biểu(vd:1812866)!\nNhập 'trợ giúp' để được hỗ trợ");
     }else{ 
            if(this.socket.connected){
             this.socket.emit("scheduleWeek", {mssv:existMssv , message:mesageUser});
            }else{
-               if(Platform.OS === "android"){
-                     ToastAndroid.show("Bot dlu cannot connet network",ToastAndroid.LONG);
-               }
+            Toast.show("Bot dlu không thể kết nối tới máy chủ",Toast.LONG);
+              
            }         
     }  
   });
@@ -380,7 +370,9 @@ class MessageBot extends React.Component {
 
           if(mesageUser === "cập nhật"
              || mesageUser.includes("cập nhật")
-                 && mesageUser.includes("mssv")){
+             && mesageUser.includes("mssv") 
+             || mesageUser.includes("cập nhật")
+             && mesageUser.includes("mã số sinh viên")){
               this.isUpdateMessageBot();
               this.confrimIsUpdateMessageBot(mesageUser);
               return { mine: state.mine, text: mesageUser }; 
@@ -506,7 +498,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   footer: {
-  height :  responsiveHeight(10),
+    height : responsiveHeight(10),
     backgroundColor: "#1D1F2C",
   },
   header: {

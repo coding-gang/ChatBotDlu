@@ -124,7 +124,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginHorizontal: 40,
     bottom:5,
-     
   },
   input: {
     fontSize: responsiveFontSize(2),
