@@ -255,10 +255,11 @@ class MessageBot extends React.Component {
     const subst = `$1`;
     const regex = /(\d)\s+(?=\d)/g;
     const vocieMessageReducer = (state = voiceMessage, action) => {
-        if (action.type === "VOICE") {         
+        if (action.type === "VOICE") {    
           sendMessageReducer({mine:state.mine,text:state.text},{type:"SEND_MESSAGE"});
           return state;
         }
+    
         return state;
       };
 
@@ -422,7 +423,17 @@ class MessageBot extends React.Component {
       vocieMessageReducer
     });
 
-    const store = createStore(reducer);
+     const store = createStore(reducer);
+     
+          store.subscribe(()=>{
+            const empty ='';
+            const voiceMess =store.getState().vocieMessageReducer.text;
+             if(voiceMess !== ""){
+              sendMessageReducer({mine:true,text:voiceMess},{type:"SEND_MESSAGE"});
+             }
+            store.getState().vocieMessageReducer.text =empty;
+          })
+
 
     let renderMessage = this.state.arrMessage.map((item, key) => {
       if (item.mine) {

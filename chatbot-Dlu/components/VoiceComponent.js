@@ -28,7 +28,7 @@ const Voices = (props) => {
 			
 		};
 	}, []);
-
+ 
     const onSpeechStart = (e) => {
 		//Invoked when .start() is called without error
 		console.log('onSpeechStart: ', e);
@@ -39,9 +39,6 @@ const Voices = (props) => {
 		//Invoked when SpeechRecognizer stops recognition
 		console.log('onSpeechEnd: ', e);
     setEnd('√');
-    setTimeout(() => {      
-      setVisible(false);         
-    }, 1500);
 	};
 
 	const onSpeechResults = (e) => {
@@ -49,9 +46,11 @@ const Voices = (props) => {
 		console.log('onSpeechResults: ', e);
         setResults(e.value);
         setVoiceMess(e.value[0]);     
-        props.myValue.text = e.value[0];  
-        props.dispatch({ type: "VOICE" });     
-      
+        props.myValue.text = e.value[0]; 
+        setTimeout(() => {      
+          setVisible(false);         
+        }, 1500);     
+          props.dispatch({ type: "NOVOICE" });     
 	};
 
 	const onSpeechPartialResults = (e) => {
@@ -76,8 +75,8 @@ const Voices = (props) => {
 	const startRecognizing = async () => {
                  
 		try {         	       
-			             setVisible(true);
-                   await Voice.start('vi-VN');	
+			              setVisible(true);
+                    await Voice.start('vi-VN');	
                     setPitch('');
                     setResults([]);
                     setPartialResults([]);
