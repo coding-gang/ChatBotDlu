@@ -423,8 +423,7 @@ class MessageBot extends React.Component {
       vocieMessageReducer
     });
 
-     const store = createStore(reducer);
-     
+    const store = createStore(reducer);
           store.subscribe(()=>{
             const empty ='';
             const voiceMess =store.getState().vocieMessageReducer.text;
@@ -432,7 +431,7 @@ class MessageBot extends React.Component {
               sendMessageReducer({mine:true,text:voiceMess},{type:"SEND_MESSAGE"});
              }
             store.getState().vocieMessageReducer.text =empty;
-          })
+    })
 
 
     let renderMessage = this.state.arrMessage.map((item, key) => {
@@ -458,12 +457,7 @@ class MessageBot extends React.Component {
        
         <View
           style={styles.container}
-        > 
-          <KeyboardAvoidingView
-            style={styles.voidingView}
-            behavior={Platform.OS === "ios" ? "padding" : "undefined"}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
-          >
+        >      
             <View style={styles.header}>
               <Text style={styles.textHeader}>Bot Dlu</Text>
               <View style={styles.ViewOnline}>
@@ -489,10 +483,16 @@ class MessageBot extends React.Component {
             <FlatListHintMessage />
             </View>      
             <View style={styles.footer}>
+            <KeyboardAvoidingView
+            style={styles.voidingView}
+            behavior={Platform.OS === "ios" ? "padding" : "undefined"}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+          >
               <Input />
               <Send />
+              </KeyboardAvoidingView>
             </View>
-          </KeyboardAvoidingView>
+        
         </View>
       </Provider>
     );
@@ -501,7 +501,7 @@ class MessageBot extends React.Component {
 
 const styles = StyleSheet.create({
   voidingView: {
-   flex: 1,
+   flex: 1
   },
   container: {
     flex: 1,
