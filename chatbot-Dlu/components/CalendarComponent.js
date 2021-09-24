@@ -67,21 +67,13 @@ const getDate = (date) =>{
                  <TouchableOpacity style={styles.modalContainer} onPress={() => { setModalVisible(false)}}>
                         <TouchableOpacity style={styles.modal}  activeOpacity={1} >
                             <Calendar
-                            onDayPress={(day) =>{getDate(day)}}
+                           
+                            onDayPress={(day) =>{getDate(day);}}
                              style={styles.calendarView} 
                               pagingEnabled={true} 
                               horizontal={true} 
                               calendarWidth={320}
-                             onDayLongPress={(day) =>{getDate(day)}}
-                              // dayComponent={({date, state}) => {
-                              //   return (
-                              //      <View>
-                              //        <Text style={{textAlign: 'center', color: state === 'disabled' ? 'gray' : 'black'}}>
-                              //          {date.day}
-                              //        </Text>
-                              //      </View>
-                              //    );
-                              //   }}
+                              onDayLongPress={(day) =>{getDate(day); getDate(day)}}
                              theme={{
                                backgroundColor:'#fffff',
                                textMonthFontWeight: 'bold',

@@ -432,6 +432,16 @@ class MessageBot extends React.Component {
       }
       return state;
     };
+
+    const SendMesCalendar={mine:true, text:{dayName:'',week:'',year:''}};
+    const messCalendarReducer = (state =SendMesCalendar, action) =>{
+      if(action.type ='SEE_CALENDAR') {
+        return state.map((e)=>{
+          // this.renderFromUser(e.mine,`Xem lịch học: ${e.}`)
+        })
+      }
+      return state
+    }
     const reducer = combineReducers({
       displaysReducer,
       sendMessageReducer,
