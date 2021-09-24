@@ -7,10 +7,10 @@ import { connect } from "react-redux";
 const CalendarComponent = (props) =>{
 
     LocaleConfig.locales['fr'] = {
-  monthNames: ['Tháng một','tháng hai','tháng ba','tháng tư','tháng năm','tháng sáu','tháng bảy','tháng tám','tháng chín','tháng mười','tháng mười một','tháng mười hai'],
+  monthNames: ['Tháng một','Tháng hai','Tháng ba','Tháng tư','Tháng năm','Tháng sáu','Tháng bảy','Tháng tám','Tháng chín','Tháng mười','Tháng mười một','Tháng mười hai'],
   monthNamesShort: ['Th1','Th2','Th3','Th4','Th5','TH6','Th7','Th8','Th9','Th10','Th11','Th12'],
-  dayNames: ['Thứ hai','thứ ba','thứ 4','thứ năm','thứ sáu','thứ bảy','chủ nhật'],
-  dayNamesShort: ['T.2','T.3','T.4.','T.5.','T.6','T.7.','CN.'],
+  dayNames: ['chủ nhật','Thứ hai','thứ ba','thứ 4','thứ năm','thứ sáu','thứ bảy'],
+  dayNamesShort: ['CN','T.2','T.3','T.4.','T.5.','T.6','T.7.'],
   today: 'hôm nay\'hn'
 };
 LocaleConfig.defaultLocale = 'fr';
@@ -20,7 +20,6 @@ const toggleModal = () =>{
 }
 Date.prototype.getWeek = function (dowOffset) {
 /*getWeek() was developed by Nick Baicoianu at MeanFreePath: http://www.meanfreepath.com */
-
     dowOffset = typeof(dowOffset) == 'number' ? dowOffset : 0; //default dowOffset to zero
     var newYear = new Date(this.getFullYear(),0,1);
     var day = newYear.getDay() - dowOffset; //the day of week the year begins on
@@ -49,17 +48,17 @@ Date.prototype.getWeek = function (dowOffset) {
 const getDate = (date) =>{
   //{"dateString": "2021-09-22", "day": 22, "month": 9, "timestamp": 1632268800000, "year": 2021}
   const message={dayName:'',week:'',year:''}
-  message.week = new Date(date.year,date.month-1,date.day).getWeek();
-  message.year = date.year;
-  const arrDayNames = ['chủ nhật','Thứ hai','thứ ba','thứ 4','thứ năm','thứ sáu','thứ bảy']
+  message.week= new Date(date.year,date.month-1,date.day).getWeek()+1;
+  message.year = `${date.year}-${date.year +1}`;
+  const arrDayNames = ['chủ nhật','thứ hai','thứ ba','thứ 4','thứ năm','thứ sáu','thứ bảy',]
   const d = new Date(date.dateString);
   message.dayName = arrDayNames[d.getDay()];
   console.log(message);
-
 }
+
     return(
-        <TouchableOpacity style={styles.container}>   
-            <Agenda  name='calendar' color="white" size={30} onPress={toggleModal}/> 
+        <TouchableOpacity style={styles.container} onPress={toggleModal} >   
+            <Agenda  name='calendar' color="white" size={30} /> 
           <Modal animationType="fade" 
           transparent={true} 
           visible={isModalVisible}
@@ -73,9 +72,31 @@ const getDate = (date) =>{
                               pagingEnabled={true} 
                               horizontal={true} 
                               calendarWidth={320}
-                              theme={{
-                                calendarBackground: '#ffffff',
-                              }}/>
+                             onDayLongPress={(day) =>{getDate(day)}}
+                              // dayComponent={({date, state}) => {
+                              //   return (
+                              //      <View>
+                              //        <Text style={{textAlign: 'center', color: state === 'disabled' ? 'gray' : 'black'}}>
+                              //          {date.day}
+                              //        </Text>
+                              //      </View>
+                              //    );
+                              //   }}
+                             theme={{
+                               backgroundColor:'#fffff',
+                               textMonthFontWeight: 'bold',
+                               textDayHeaderFontWeight: '300',
+                               arrowColor: '#8961D8',
+                               textDayFontSize: 17,
+                              textMonthFontSize: 20,
+                              textDayHeaderFontSize: 19,
+                              todayBackgroundColor:'#8961D8',
+                              todayTextColor: '#ffffff',
+                              monthTextColor: '#8961D8',
+                              selectedDotColor: '#ffffff',
+                              dayTextColor: 'black',
+                             }}
+                              />
                         </TouchableOpacity>
                     </TouchableOpacity>
             </Modal>
@@ -104,7 +125,8 @@ const styles = StyleSheet.create({
         justifyContent:'center',
         height:400,
         borderRadius:30,
-
+        borderColor: '#8961D8',
+        borderWidth:3
     },
      modalContainer: {
          flex: 1,
