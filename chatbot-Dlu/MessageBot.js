@@ -433,14 +433,13 @@ class MessageBot extends React.Component {
       return state;
     };
 
-    const SendMesCalendar={mine:true, text:{dayName:'',week:'',year:''}};
-    const messCalendarReducer = (state =SendMesCalendar, action) =>{
-      if(action.type ='SEE_CALENDAR') {
-        return state.map((e)=>{
-          // this.renderFromUser(e.mine,`Xem lịch học: ${e.}`)
-        })
-      }
-      return state
+    const SendMesCalendar={mine:true, data:{dayName:'ds',week:'',year:''},text:''};
+
+    const messCalendarReducer = (state = SendMesCalendar, action) =>{
+      if(action.type ==='SEND_CALENDAR'){
+        return state;
+      } 
+        return state;
     }
     const reducer = combineReducers({
       displaysReducer,
@@ -449,6 +448,7 @@ class MessageBot extends React.Component {
       hintMessageReducer,
       initHintMessageReducer,
       vocieMessageReducer,
+      messCalendarReducer
     });
 
     const store = createStore(reducer);
@@ -462,6 +462,14 @@ class MessageBot extends React.Component {
         );
       }
       store.getState().vocieMessageReducer.text = empty;
+      const calendarMess = store.getState().messCalendarReducer.text;
+      if(calendarMess !== ""){
+         sendMessageReducer(
+          {mine: true, text: calendarMess},
+          {type: 'SEND_MESSAGE'},
+        );
+      }
+      store.getState().messCalendarReducer.text = empty;
     });
 
     let renderMessage = this.state.arrMessage.map((item, key) => {

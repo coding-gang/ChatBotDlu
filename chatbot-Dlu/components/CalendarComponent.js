@@ -44,16 +44,26 @@ Date.prototype.getWeek = function (dowOffset) {
     }
     return weeknum;
 };
-
+  const arrDayNames = ['chủ nhật','thứ hai','thứ ba','thứ 4','thứ năm','thứ sáu','thứ bảy',]
+const sendCalendar = () =>{
+  setModalVisible(false);
+  props.dispatch({
+    type:"SEND_CALENDAR"
+  })
+}
 const getDate = (date) =>{
   //{"dateString": "2021-09-22", "day": 22, "month": 9, "timestamp": 1632268800000, "year": 2021}
   const message={dayName:'',week:'',year:''}
   message.week= new Date(date.year,date.month-1,date.day).getWeek()+1;
   message.year = `${date.year}-${date.year +1}`;
-  const arrDayNames = ['chủ nhật','thứ hai','thứ ba','thứ 4','thứ năm','thứ sáu','thứ bảy',]
   const d = new Date(date.dateString);
   message.dayName = arrDayNames[d.getDay()];
-  console.log(message);
+ // {mine:true, data:{dayName:'',week:'',year:''},text:''}
+  props.dataCalendar.data = message;
+  const mesUser= `TKB ngày ${date.day} tháng ${date.month} năm ${date.year}`
+  props.dataCalendar.text = mesUser;
+  console.log(props.dataCalendar.data);
+  sendCalendar();
 }
 
     return(
@@ -67,13 +77,11 @@ const getDate = (date) =>{
                  <TouchableOpacity style={styles.modalContainer} onPress={() => { setModalVisible(false)}}>
                         <TouchableOpacity style={styles.modal}  activeOpacity={1} >
                             <Calendar
-                           
-                            onDayPress={(day) =>{getDate(day);}}
                              style={styles.calendarView} 
                               pagingEnabled={true} 
                               horizontal={true} 
                               calendarWidth={320}
-                              onDayLongPress={(day) =>{getDate(day); getDate(day)}}
+                              onDayLongPress={(day) =>{getDate(day)}}
                              theme={{
                                backgroundColor:'#fffff',
                                textMonthFontWeight: 'bold',
@@ -97,7 +105,7 @@ const getDate = (date) =>{
 }
 function mapStateToProps(state) {
     return {
-      init: state.initHintMessageReducer,
+      dataCalendar: state.messCalendarReducer,
     };
   }
 export default connect(mapStateToProps) (CalendarComponent);

@@ -2,7 +2,6 @@ import React,{useState} from "react";
 import {StyleSheet,FlatList ,Animated} from 'react-native'
 import { connect } from "react-redux";
 import HintMessage from "./HintMessage";
-import { moderateScale } from "react-native-size-matters";
 
 const FlatListHintMessage=(props) =>{
   const [fadeAnim] = useState(new Animated.Value(0));
