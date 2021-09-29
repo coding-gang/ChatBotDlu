@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     backgroundColor: "#30384B",
     justifyContent: "center",
-    marginHorizontal: 40,
+    marginHorizontal: 60,
     bottom:5,
   },
   input: {

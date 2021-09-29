@@ -12,7 +12,8 @@ const Splash =({navigation})=> {
                 navigation.navigate('OnboardingScreen');
             }, 3000);
             }else{           
-                let items =[];
+              
+                 let items =[];         
                 getDataStorage().then(stores =>{
                     stores.map( (result,i,store)=>{   
                     if (store[i][1] !== null){
