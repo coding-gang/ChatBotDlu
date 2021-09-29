@@ -1,5 +1,5 @@
 import React,{useState} from 'react';
-import {Modal, Text, View, TouchableOpacity, StyleSheet, TouchableWithoutFeedback} from 'react-native';
+import {Modal, TouchableOpacity,View, StyleSheet,Animated,Dimensions} from 'react-native';
 import Agenda from 'react-native-vector-icons/AntDesign';
 import {Calendar} from 'react-native-calendars';
 import {LocaleConfig} from 'react-native-calendars';
@@ -9,14 +9,18 @@ const CalendarComponent = (props) =>{
     LocaleConfig.locales['fr'] = {
   monthNames: ['Tháng một','Tháng hai','Tháng ba','Tháng tư','Tháng năm','Tháng sáu','Tháng bảy','Tháng tám','Tháng chín','Tháng mười','Tháng mười một','Tháng mười hai'],
   monthNamesShort: ['Th1','Th2','Th3','Th4','Th5','TH6','Th7','Th8','Th9','Th10','Th11','Th12'],
-  dayNames: ['chủ nhật','Thứ hai','thứ ba','thứ 4','thứ năm','thứ sáu','thứ bảy'],
-  dayNamesShort: ['CN','T.2','T.3','T.4.','T.5.','T.6','T.7.'],
+  dayNames: ['chủ nhật','Thứ hai','thứ ba','thứ tư','thứ năm','thứ sáu','thứ bảy'],
+  dayNamesShort: ['CN','T.2','T.3','T.4','T.5','T.6','T.7'],
   today: 'hôm nay\'hn'
 };
 LocaleConfig.defaultLocale = 'fr';
 const [isModalVisible,setModalVisible] = useState(false);
+const [animation,setAnimation] =useState(new Animated.Value(0));
+const [day, setday] = useState('');
+const {height} = Dimensions.get("window");
 const toggleModal = () =>{
     setModalVisible(!isModalVisible);
+    modalTrigger();
 }
 Date.prototype.getWeek = function (dowOffset) {
 /*getWeek() was developed by Nick Baicoianu at MeanFreePath: http://www.meanfreepath.com */
@@ -44,43 +48,101 @@ Date.prototype.getWeek = function (dowOffset) {
     }
     return weeknum;
 };
-  const arrDayNames = ['chủ nhật','thứ hai','thứ ba','thứ 4','thứ năm','thứ sáu','thứ bảy',]
-const sendCalendar = () =>{
-  setModalVisible(false);
-  props.dispatch({
-    type:"SEND_CALENDAR"
-  })
-}
+  const arrDayNames = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7']
+  const sendCalendar = () =>{
+    save();
+   setTimeout(() => {
+    setModalVisible(false);
+    setday('');
+   }, 3000); 
+    props.dispatch({
+      type:"NO_SEND_CALENDAR"
+    })
+  }
 const getDate = (date) =>{
   //{"dateString": "2021-09-22", "day": 22, "month": 9, "timestamp": 1632268800000, "year": 2021}
-  const message={dayName:'',week:'',year:''}
+  const message={dayName:'',week:'',month:'',year:''}
   message.week= new Date(date.year,date.month-1,date.day).getWeek()+1;
+  message.month = date.month;
   message.year = `${date.year}-${date.year +1}`;
   const d = new Date(date.dateString);
   message.dayName = arrDayNames[d.getDay()];
  // {mine:true, data:{dayName:'',week:'',year:''},text:''}
   props.dataCalendar.data = message;
   const mesUser= `TKB ngày ${date.day} tháng ${date.month} năm ${date.year}`
-  props.dataCalendar.text = mesUser;
-  console.log(props.dataCalendar.data);
+  props.dataCalendar.textCalendar = mesUser;
   sendCalendar();
 }
+
+  const openModal =animation.interpolate({
+      inputRange:[0,1],
+      outputRange:[0,1],
+      extrapolate:"clamp"
+  });
+  
+  const saveModal =animation.interpolate({
+    inputRange:[1,2],
+    outputRange:[0,-height],
+    extrapolate:"clamp"
+ });
+ 
+  const modalTrigger =()=>{
+     Animated.timing(animation,{
+       toValue:1,
+       duration:500,
+       useNativeDriver:true
+     }).start();
+  };
+  const save =()=>{
+    Animated.timing(animation,{
+      toValue:2,
+      duration:500,
+      useNativeDriver:true
+    }).start(()=>{
+      animation.setValue(0)
+    });
+ };
+ const close =()=>{
+  Animated.timing(animation,{
+    toValue:0,
+    duration:500,
+    useNativeDriver:true
+  }).start();
+};
+
+  const open ={
+    transform:[
+      {scale:openModal},
+     {translateY:saveModal}
+    ]
+       
+  };
 
     return(
         <TouchableOpacity style={styles.container} onPress={toggleModal} >   
             <Agenda  name='calendar' color="white" size={30} /> 
-          <Modal animationType="fade" 
-          transparent={true} 
+            <Modal 
+            transparent={true}
           visible={isModalVisible}
           onRequestClose={()=>setModalVisible(false)}
-             >
-                 <TouchableOpacity style={styles.modalContainer} onPress={() => { setModalVisible(false)}}>
+           >   
+              
+            <Animated.View style={[styles.modalContainer,open]}>        
+                 <TouchableOpacity style={styles.modalContainer}  onPress={() => {close(), setTimeout(() => {
+                   setModalVisible(false),
+                   setday('');
+                 }, 1500); }}>
                         <TouchableOpacity style={styles.modal}  activeOpacity={1} >
                             <Calendar
                              style={styles.calendarView} 
-                              pagingEnabled={true} 
+                              pagingEnabled={true}                
                               horizontal={true} 
-                              calendarWidth={320}
+                              calendarWidth={320}                   
+                              markedDates={{
+                                [day]: { selected: true,  marked: true},
+                               
+                                }}
+                              onDayPress ={day => setday(day.dateString)}
                               onDayLongPress={(day) =>{getDate(day)}}
                              theme={{
                                backgroundColor:'#fffff',
@@ -95,11 +157,13 @@ const getDate = (date) =>{
                               monthTextColor: '#8961D8',
                               selectedDotColor: '#ffffff',
                               dayTextColor: 'black',
+                              selectedDayBackgroundColor: '#bfa3f7',
                              }}
                               />
                         </TouchableOpacity>
                     </TouchableOpacity>
-            </Modal>
+                    </Animated.View>               
+                    </Modal>                                  
        </TouchableOpacity>
     );
 }
@@ -117,9 +181,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     position: "absolute",
     bottom:15,
-    left:0,
-    borderRadius:60,
-    backgroundColor:'#434959',
+    left:0
     },
     calendarView:{
         justifyContent:'center',

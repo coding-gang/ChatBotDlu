@@ -6,7 +6,7 @@ import { StyleSheet, View, Text,Animated,TouchableOpacity } from "react-native";
 // Import react-native-size-matters
 import { moderateScale } from "react-native-size-matters";
 
-class ConfirmBot extends React.Component {
+class SpecifyScheduleBot extends React.Component {
 
   state = {
     animatedValue: new Animated.Value(0)
@@ -44,11 +44,14 @@ class ConfirmBot extends React.Component {
           ) : null}        
              </View> 
              <View style={styles.touchView}>     
-             <TouchableOpacity style={styles.touch} onPress={()=> this.props.dispatch({ type: "YES" })}>
-             <Text style={styles.textItem}>Có</Text>
+             <TouchableOpacity style={styles.touch} onPress={()=> this.props.dispatch({ type: "ĐÚNG" })}>
+             <Text style={styles.textItem}>đúng</Text>
              </TouchableOpacity>
-             <TouchableOpacity style={styles.touch} onPress={()=> this.props.dispatch({ type: "NO" })}>
-             <Text style={styles.textItem}>Không</Text>
+             <TouchableOpacity style={styles.touch} onPress={()=> this.props.dispatch({ type: "CANCLE" })}>
+             <Text style={styles.textItem}>hủy</Text>
+             </TouchableOpacity>
+             <TouchableOpacity style={styles.touch} onPress={()=> this.props.dispatch({ type: "MSSV_KHÁC" })}>
+             <Text style={styles.textItemMssv}>mã số khác</Text>
              </TouchableOpacity>
              </View>
         </Animated.View>
@@ -56,7 +59,7 @@ class ConfirmBot extends React.Component {
     );
   }
 }
-export default connect()(ConfirmBot);
+export default connect()(SpecifyScheduleBot);
 
 const styles = StyleSheet.create({
   message: {
@@ -98,15 +101,26 @@ const styles = StyleSheet.create({
     zIndex: -1,
     flex: 1,
   },
-  textItem: {
+  textItemMssv: {
     color: "white",
-    width: 'auto',
+    marginLeft:4,
     borderColor: "white",
     borderRadius: 10,
     backgroundColor: "#272C3A",
     borderWidth:1,
     fontSize:15,
     padding:8,
+    width:100
+  },
+  textItem: {
+    color: "white",
+    marginLeft:4,
+    borderColor: "white",
+    borderRadius: 10,
+    backgroundColor: "#272C3A",
+    borderWidth:1,
+    fontSize:15,
+    padding:8
   },
   touchView:{
   flexDirection: "row",

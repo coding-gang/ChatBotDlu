@@ -27,6 +27,7 @@ import {createStore} from 'redux';
 import {Provider} from 'react-redux';
 import {combineReducers} from 'redux';
 import {renderSchedule} from './module/ScheduleModule';
+import SpecifyScheduleBot from './components/SpecifyScheduleBot';
 import {
   getDataStorage,
   setDataStorage,
@@ -48,7 +49,8 @@ const io = require('socket.io-client/dist/socket.io.js');
 const YES = 'có';
 const NO = 'không';
 const CANCEL = 'hủy';
-
+const OK ="đúng";
+const OTHERMSSV ="mã số khác"
 class MessageBot extends React.Component {
   constructor(props) {
     super(props);
@@ -58,7 +60,15 @@ class MessageBot extends React.Component {
       deleteMessage: false,
       scheduleMessage: false,
       updateMSSV: false,
+      specifySchedule: false,
       confirmUpdate: NO,
+      dataSpecifySchedule:{},
+      otherMssvFromCalendar :false,
+      mssv:"",
+      checkNumberMssvError:0,
+      cancleCalendar:false,
+      isInputMssv:false,
+      saveCalendar:{}
     };
 
     //https://chatbot-dlu.herokuapp.com
@@ -71,6 +81,7 @@ class MessageBot extends React.Component {
       console.log('socket connected from server chatbot-dlu');
     });
     this.socket.on('send-schedule', data => {
+       console.log(data);
       if (Array.isArray(data)) {
         const messageBots = renderSchedule(data);
         messageBots.forEach(e => {
@@ -120,6 +131,11 @@ class MessageBot extends React.Component {
 
   renderFromBot(text, confirm = false) {
     const newMess = {mine: false, text: text, Confirm: confirm};
+    this.addMessage(newMess);
+    this.add_view();
+  }
+  renderFromSpecifyBot(text, specifySchedule = false) {
+    const newMess = {mine: false, text: text, specifySchedule: specifySchedule};
     this.addMessage(newMess);
     this.add_view();
   }
@@ -307,9 +323,16 @@ class MessageBot extends React.Component {
 
     const confirmMessageReducer = (state = '', action) => {
       if (action.type === 'YES') {
-        sendMessageReducer({mine: true, text: 'có'}, {type: 'SEND_MESSAGE'});
+        sendMessageReducer({mine: true, text: YES}, {type: 'SEND_MESSAGE'});
       } else if (action.type === 'NO') {
-        sendMessageReducer({mine: true, text: 'không'}, {type: 'SEND_MESSAGE'});
+        sendMessageReducer({mine: true, text: NO}, {type: 'SEND_MESSAGE'});
+      }else if(action.type === 'ĐÚNG'){
+        sendMessageReducer({mine: true, text: OK}, {type: 'SEND_MESSAGE'});
+      }else if(action.type === 'CANCLE'){
+        sendMessageReducer({mine: true, text: CANCEL}, {type: 'SEND_MESSAGE'});
+      }
+      else if(action.type === "MSSV_KHÁC"){
+        sendMessageReducer({mine: true, text: OTHERMSSV}, {type: 'SEND_MESSAGE'});
       }
       return state;
     };
@@ -380,6 +403,39 @@ class MessageBot extends React.Component {
                 this.isUpdateMessageBot();
               }
             }
+          }else if(this.state.cancleCalendar){
+            if(mesageUser === YES){
+              this.renderFromBot("Bạn đã hủy xem lịch tkb");
+              resetStateCalendar();
+              this.setState({cancleCalendar:false});
+            }else if(mesageUser === NO){
+              this.setState({cancleCalendar:false});
+                this.setState({checkNumberMssvError:0});
+             
+            }else{
+              this.renderFromBot("Bạn có muốn hủy xem lịch tkb?",true);
+            }
+      
+                 
+          } else if(this.state.specifySchedule){
+                     
+            if(mesageUser === OK ){
+              sendCalendarToServer(this.state.mssv,this.state.dataSpecifySchedule);
+            }else if(mesageUser === OTHERMSSV){        
+                     if(this.state.isInputMssv){
+                      otherMSSVFromCalendar(mesageUser);
+                     }else{
+                      this.renderFromBot("Bạn hãy nhập mssv");
+                      this.setState({isInputMssv:true});
+                     }   
+            }   
+            else if(mesageUser === CANCEL){
+              this.renderFromBot("Bạn đã hủy xem lịch tkb");
+              resetStateCalendar();
+            }else{
+              otherMSSVFromCalendar(mesageUser);
+            }   
+                 
           } else {
             if (mesageUser.includes('xoá') || mesageUser.includes('xóa')) {
               this.isDeleleMessageBot();
@@ -422,7 +478,72 @@ class MessageBot extends React.Component {
       }
       return {mine: state.mine, text: state.text};
     };
+ const sendSpecifySchedule = (messFromUser)=>{
+    const data = messFromUser.textCalendar;
+   getMSSVDataStorage().then(kq => {
+    const existMssv = checkExistMssv(kq);
+    if (existMssv === null) {
+      this.renderFromBot(
+        "Bạn phải cung cấp MSSV trước khi xem thời khóa biểu(vd:1812866)!\nNhập 'trợ giúp' để được hỗ trợ",
+      );
+    }else {
+      if (this.socket.connected) {    
+      
+          const confirmString = `Xem ${data.toLocaleLowerCase()} với mssv ${existMssv}` ;
+          this.setState({specifySchedule:true});
+          this.setState({mssv:existMssv})
+          this.setState({dataSpecifySchedule:messFromUser.data});
+          this.renderFromSpecifyBot(confirmString,true);       
+      } else {
+        Toast.show('Bot dlu không thể kết nối tới máy chủ', Toast.LONG);
+      }
+    }
+  });
+ }
+ const sendCalendarToServer = (mssv , data) =>{
+   
+  if (this.socket.connected) {
+    this.socket.emit('scheduleWeek', {
+      mssv: mssv,
+      dataCalendar:data
+    });
+    resetStateCalendar();
+  } else {
+    Toast.show('Bot dlu không thể kết nối tới máy chủ', Toast.LONG);
+  }
+ }
 
+  const resetStateCalendar = () =>{
+    this.setState({mssv:""});
+    this.setState({otherMSSVFromCalendar:false});
+    this.setState({dataSpecifySchedule:{}});
+    this.setState({specifySchedule:false});
+  }
+
+ const otherMSSVFromCalendar =(numberMSSV) =>{
+    this.setState({checkNumberMssvError:this.state.checkNumberMssvError+1});
+       if(this.state.checkNumberMssvError >3){
+                 this.setState({cancleCalendar:true});
+                 this.renderFromBot("Bạn có muốn hủy xem lịch tkb?",true);
+           }else{
+
+                let isnum = /^\d+$/.test(numberMSSV);
+                if(isnum){
+                  if(numberMSSV.length === 7){
+                   this.setState({mssv:numberMSSV});
+                   this.socket.emit('scheduleWeek', {
+                    mssv: this.state.mssv,
+                    dataCalendar: this.state.dataSpecifySchedule
+                  });               
+                  resetStateCalendar();
+                  }else{
+                   this.renderFromBot('MSSV phải 7 chữ số!');
+                 }     
+                }else{
+                   this.renderFromBot("Bạn chỉ được nhập số");
+                }
+               }
+ }
     const displaysReducer = (state = show, action) => {
       if (action.type === 'SHOW') {
         return {display: (state.display = 'flex')};
@@ -433,10 +554,11 @@ class MessageBot extends React.Component {
       return state;
     };
 
-    const SendMesCalendar={mine:true, data:{dayName:'ds',week:'',year:''},text:''};
+    const SendMesCalendar={mine:true, data:{dayName:'ds',week:'',month:'',year:''},textCalendar:''};
 
     const messCalendarReducer = (state = SendMesCalendar, action) =>{
       if(action.type ==='SEND_CALENDAR'){
+     //   sendSpecifySchedule(state);
         return state;
       } 
         return state;
@@ -452,7 +574,8 @@ class MessageBot extends React.Component {
     });
 
     const store = createStore(reducer);
-    store.subscribe(() => {
+
+    store.subscribe(  () => {
       const empty = '';
       const voiceMess = store.getState().vocieMessageReducer.text;
       if (voiceMess !== '') {
@@ -462,14 +585,13 @@ class MessageBot extends React.Component {
         );
       }
       store.getState().vocieMessageReducer.text = empty;
-      const calendarMess = store.getState().messCalendarReducer.text;
-      if(calendarMess !== ""){
-         sendMessageReducer(
-          {mine: true, text: calendarMess},
-          {type: 'SEND_MESSAGE'},
-        );
+     
+      const calendarMess = store.getState().messCalendarReducer; 
+      if(calendarMess.textCalendar !== ""){
+        sendSpecifySchedule(calendarMess);
+        store.getState().messCalendarReducer.textCalendar = empty;
       }
-      store.getState().messCalendarReducer.text = empty;
+     
     });
 
     let renderMessage = this.state.arrMessage.map((item, key) => {
@@ -478,6 +600,9 @@ class MessageBot extends React.Component {
       } else if (!item.mine && item.Confirm) {
         return <ConfirmBot key={key} not_mine text={item.text} />;
       }
+      else if (!item.mine && item.specifySchedule) {
+        return <SpecifyScheduleBot key={key} not_mine text={item.text} />;
+      }  
       return <MessageBubble key={key} not_mine text={item.text} />;
     });
 
