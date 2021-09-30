@@ -81,7 +81,6 @@ class MessageBot extends React.Component {
       console.log('socket connected from server chatbot-dlu');
     });
     this.socket.on('send-schedule', data => {
-       console.log(data);
       if (Array.isArray(data)) {
         const messageBots = renderSchedule(data);
         messageBots.forEach(e => {
@@ -532,9 +531,10 @@ class MessageBot extends React.Component {
                   if(numberMSSV.length === 7){
                    this.setState({mssv:numberMSSV});
                    this.socket.emit('scheduleWeek', {
-                    mssv: this.state.mssv,
+                    mssv: numberMSSV,
                     dataCalendar: this.state.dataSpecifySchedule
-                  });               
+                  });
+                  this.setState({isInputMssv:false});               
                   resetStateCalendar();
                   }else{
                    this.renderFromBot('MSSV phải 7 chữ số!');

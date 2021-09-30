@@ -1,6 +1,6 @@
 import MicroIcons from 'react-native-vector-icons/Feather';
-import Agenda from 'react-native-vector-icons/AntDesign'
 
+import RNBeep from 'react-native-a-beep';
 import {Modal, Text, View, TouchableOpacity, StyleSheet} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import Voice from 'react-native-voice';
@@ -74,6 +74,7 @@ const Voices = props => {
 
   const startRecognizing = async () => {
     try {
+     
       setVisible(true);
       await Voice.start('vi-VN');
       setPitch('');
