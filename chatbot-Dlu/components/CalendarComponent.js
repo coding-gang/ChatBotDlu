@@ -1,5 +1,5 @@
 import React,{useState} from 'react';
-import {Modal, TouchableOpacity,View, StyleSheet,Animated,Dimensions} from 'react-native';
+import {Modal, TouchableOpacity,View,Text, StyleSheet,Animated,Dimensions} from 'react-native';
 import Agenda from 'react-native-vector-icons/AntDesign';
 import {Calendar} from 'react-native-calendars';
 import {LocaleConfig} from 'react-native-calendars';
@@ -119,19 +119,22 @@ const getDate = (date) =>{
   };
 
     return(
-        <TouchableOpacity style={styles.container} onPress={toggleModal} >   
+           
+        <TouchableOpacity style={styles.container} onPress={toggleModal} >    
             <Agenda  name='calendar' color="white" size={30} /> 
             <Modal 
             transparent={true}
           visible={isModalVisible}
           onRequestClose={()=>setModalVisible(false)}
            >   
-              
-            <Animated.View style={[styles.modalContainer,open]}>        
-                 <TouchableOpacity style={styles.modalContainer}  onPress={() => {close(), setTimeout(() => {
+                  
+            <Animated.View style={[styles.modalContainer,open]}>      
+           
+               <TouchableOpacity style={styles.modalContainer}  onPress={() => {close(), setTimeout(() => {
                    setModalVisible(false),
                    setday('');
                  }, 1500); }}>
+                <Text style={styles.text}>Ấn giữ để chọn</Text>  
                         <TouchableOpacity style={styles.modal}  activeOpacity={1} >
                             <Calendar
                              style={styles.calendarView} 
@@ -161,7 +164,7 @@ const getDate = (date) =>{
                              }}
                               />
                         </TouchableOpacity>
-                    </TouchableOpacity>
+                    </TouchableOpacity> 
                     </Animated.View>               
                     </Modal>                                  
        </TouchableOpacity>
@@ -192,17 +195,22 @@ const styles = StyleSheet.create({
     },
      modalContainer: {
          flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)'
+         justifyContent: 'center',
+         alignItems: 'center',
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)'
   },
   modal:{
         width:'90%' ,
       height: 400,
   },  
+  text: {
+    flex:0.2,
+    fontSize: 18,
+    color: 'white'
+  },
 })
