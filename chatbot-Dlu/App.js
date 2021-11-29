@@ -4,7 +4,7 @@
 import React, {useEffect} from 'react';
 import 'react-native-gesture-handler';
 import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+import {createStackNavigator,CardStyleInterpolators} from '@react-navigation/stack';
 import MessageBot from './MessageBot';
 import Splash from './Splash';
 import OnboardingScreen from './OnBoardingScreen';
@@ -15,7 +15,7 @@ function MyStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerShown: false,
+        headerShown: false
       }}>
       <Stack.Screen name="Splash" component={Splash} />
       <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />

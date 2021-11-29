@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     borderWidth: 1,
     borderRadius: 20,
-    height: 40,
+    height: 40
   },
   textSendHintMessage: {
     color: "white",

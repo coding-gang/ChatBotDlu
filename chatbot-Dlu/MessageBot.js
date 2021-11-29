@@ -27,7 +27,9 @@ import {createStore} from 'redux';
 import {Provider} from 'react-redux';
 import {combineReducers} from 'redux';
 import {renderSchedule} from './module/ScheduleModule';
+import {ScheduleTableView} from './module/ScheduleTableViewModule';
 import SpecifyScheduleBot from './components/SpecifyScheduleBot';
+import ScheduleTabViewComponent from './components/ScheduleTabViewComponent';
 import {
   getDataStorage,
   setDataStorage,
@@ -82,10 +84,13 @@ class MessageBot extends React.Component {
     });
     this.socket.on('send-schedule', data => {
       if (Array.isArray(data)) {
-        const messageBots = renderSchedule(data);
-        messageBots.forEach(e => {
-          this.renderFromBot(e.text);
-        });
+        this.state.arrMessage.splice(-1,1);
+          const messageBots =ScheduleTableView(data);
+          this.renderFromBotTable(messageBots);
+       // const messageBots = renderSchedule(data);
+        // messageBots.forEach(e => {
+        //   this.renderFromBot(e.text);
+        // });
       } else {
         this.renderFromBot(data);
       }
@@ -125,6 +130,11 @@ class MessageBot extends React.Component {
   renderFromUser(isMine, text) {
     const newMess = {mine: isMine, text: text};
     this.addMessage(newMess);
+    this.add_view();
+  }
+
+  renderFromBotTable(data) {
+    this.addMessage(data);
     this.add_view();
   }
 
@@ -602,6 +612,9 @@ class MessageBot extends React.Component {
       }
       else if (!item.mine && item.specifySchedule) {
         return <SpecifyScheduleBot key={key} not_mine text={item.text} />;
+      }
+      else if(Array.isArray(item)){
+         return <ScheduleTabViewComponent key={key} not_mine schedules={item} />
       }  
       return <MessageBubble key={key} not_mine text={item.text} />;
     });
@@ -626,7 +639,9 @@ class MessageBot extends React.Component {
               onContentSizeChange={() =>
                 this.scrollView.scrollToEnd({animated: true})
               }>
-              {renderMessage}
+              {
+              renderMessage
+              }
             </ScrollView>
           </View>
           <View style={styles.flatList}>
