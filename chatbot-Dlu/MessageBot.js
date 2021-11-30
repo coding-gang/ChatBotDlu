@@ -6,7 +6,6 @@
  * @format
  * @flow strict-local
  */
-
 import React from 'react';
 import {
   StyleSheet,
@@ -15,7 +14,10 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  LogBox,
+  SafeAreaView
 } from 'react-native';
+
 import Toast from 'react-native-simple-toast';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MessageBubble from './components/MessageBubble';
@@ -30,6 +32,7 @@ import {renderSchedule} from './module/ScheduleModule';
 import {ScheduleTableView} from './module/ScheduleTableViewModule';
 import SpecifyScheduleBot from './components/SpecifyScheduleBot';
 import ScheduleTabViewComponent from './components/ScheduleTabViewComponent';
+import ScheduleListCalendar from './components/swipeToDeleteScheduleComponent';
 import {
   getDataStorage,
   setDataStorage,
@@ -53,7 +56,9 @@ const NO = 'không';
 const CANCEL = 'hủy';
 const OK ="đúng";
 const OTHERMSSV ="mã số khác"
+LogBox.ignoreLogs(['VirtualizedLists should never be nested inside plain ScrollViews with the same orientation - use another VirtualizedList-backed container instead.']);
 class MessageBot extends React.Component {
+  
   constructor(props) {
     super(props);
     this.state = {
@@ -64,7 +69,7 @@ class MessageBot extends React.Component {
       updateMSSV: false,
       specifySchedule: false,
       confirmUpdate: NO,
-      dataSpecifySchedule:{},
+      dataSpecifySchedule:[],
       otherMssvFromCalendar :false,
       mssv:"",
       checkNumberMssvError:0,
@@ -78,7 +83,7 @@ class MessageBot extends React.Component {
       transports: ['websocket', 'polling', 'flashsocket'],
       jsonp: false,
     });
-
+   
     this.socket.on('connect', () => {
       console.log('socket connected from server chatbot-dlu');
     });
@@ -143,9 +148,8 @@ class MessageBot extends React.Component {
     this.addMessage(newMess);
     this.add_view();
   }
-  renderFromSpecifyBot(text, specifySchedule = false) {
-    const newMess = {mine: false, text: text, specifySchedule: specifySchedule};
-    this.addMessage(newMess);
+  renderFromSpecifyBot(data, specifySchedule = false) {
+    this.addMessage(data);
     this.add_view();
   }
 
@@ -488,7 +492,7 @@ class MessageBot extends React.Component {
       return {mine: state.mine, text: state.text};
     };
  const sendSpecifySchedule = (messFromUser)=>{
-    const data = messFromUser.textCalendar;
+    const data = messFromUser.data;
    getMSSVDataStorage().then(kq => {
     const existMssv = checkExistMssv(kq);
     if (existMssv === null) {
@@ -497,12 +501,10 @@ class MessageBot extends React.Component {
       );
     }else {
       if (this.socket.connected) {    
-      
-          const confirmString = `Xem ${data.toLocaleLowerCase()} với mssv ${existMssv}` ;
-          this.setState({specifySchedule:true});
-          this.setState({mssv:existMssv})
-          this.setState({dataSpecifySchedule:messFromUser.data});
-          this.renderFromSpecifyBot(confirmString,true);       
+            this.setState({specifySchedule:true});
+            this.setState({mssv:existMssv})
+            this.setState({dataSpecifySchedule:data});
+          this.renderFromSpecifyBot(data,true);       
       } else {
         Toast.show('Bot dlu không thể kết nối tới máy chủ', Toast.LONG);
       }
@@ -510,13 +512,13 @@ class MessageBot extends React.Component {
   });
  }
  const sendCalendarToServer = (mssv , data) =>{
-   
   if (this.socket.connected) {
-    this.socket.emit('scheduleWeek', {
-      mssv: mssv,
-      dataCalendar:data
-    });
-    resetStateCalendar();
+    // this.socket.emit('scheduleWeek', {
+    //   mssv: mssv,
+    //   dataCalendar:data
+    // });
+    console.log(data);
+  //  resetStateCalendar();
   } else {
     Toast.show('Bot dlu không thể kết nối tới máy chủ', Toast.LONG);
   }
@@ -525,7 +527,7 @@ class MessageBot extends React.Component {
   const resetStateCalendar = () =>{
     this.setState({mssv:""});
     this.setState({otherMSSVFromCalendar:false});
-    this.setState({dataSpecifySchedule:{}});
+    this.setState({dataSpecifySchedule:[]});
     this.setState({specifySchedule:false});
   }
 
@@ -540,10 +542,11 @@ class MessageBot extends React.Component {
                 if(isnum){
                   if(numberMSSV.length === 7){
                    this.setState({mssv:numberMSSV});
-                   this.socket.emit('scheduleWeek', {
-                    mssv: numberMSSV,
-                    dataCalendar: this.state.dataSpecifySchedule
-                  });
+                   console.log(this.state.dataSpecifySchedule);
+                  //  this.socket.emit('scheduleWeek', {
+                  //   mssv: numberMSSV,
+                  //   dataCalendar: this.state.dataSpecifySchedule
+                  // });
                   this.setState({isInputMssv:false});               
                   resetStateCalendar();
                   }else{
@@ -567,12 +570,20 @@ class MessageBot extends React.Component {
     const SendMesCalendar={mine:true, data:{dayName:'ds',week:'',month:'',year:''},textCalendar:''};
 
     const messCalendarReducer = (state = SendMesCalendar, action) =>{
-      if(action.type ==='SEND_CALENDAR'){
-     //   sendSpecifySchedule(state);
+      if(action.type === 'SEND_CALENDAR'){
         return state;
       } 
         return state;
     }
+    const listMesCalendar=this.state.dataSpecifySchedule;
+    const updateCalendarReducer = (state = listMesCalendar, action) =>{
+      if(action.type === 'UPDATE_CALENDAR'){          
+          this.setState({dataSpecifySchedule:state});
+        return state;
+      } 
+        return state;
+    }
+
     const reducer = combineReducers({
       displaysReducer,
       sendMessageReducer,
@@ -580,7 +591,8 @@ class MessageBot extends React.Component {
       hintMessageReducer,
       initHintMessageReducer,
       vocieMessageReducer,
-      messCalendarReducer
+      messCalendarReducer,
+      updateCalendarReducer
     });
 
     const store = createStore(reducer);
@@ -597,14 +609,17 @@ class MessageBot extends React.Component {
       store.getState().vocieMessageReducer.text = empty;
      
       const calendarMess = store.getState().messCalendarReducer; 
-      if(calendarMess.textCalendar !== ""){
+      if(calendarMess.data.length >0){
         sendSpecifySchedule(calendarMess);
-        store.getState().messCalendarReducer.textCalendar = empty;
+        store.getState().messCalendarReducer.data = [];
       }
-     
     });
 
-    let renderMessage = this.state.arrMessage.map((item, key) => {
+    let renderMessage = this.state.arrMessage
+                                  .filter(el=> el && typeof el === 'object' &&
+                                           el.constructor === Object ||
+                                            Array.isArray(el) && el.length >0 )
+                                  .map((item, key) => {
       if (item.mine) {
         return <MessageBubble key={key} mine text={item.text} />;
       } else if (!item.mine && item.Confirm) {
@@ -614,9 +629,16 @@ class MessageBot extends React.Component {
         return <SpecifyScheduleBot key={key} not_mine text={item.text} />;
       }
       else if(Array.isArray(item)){
-         return <ScheduleTabViewComponent key={key} not_mine schedules={item} />
+        if( item.length >0 && item[0].hasOwnProperty('data')){
+          return <ScheduleListCalendar key={key} data={item}/>
+        }else{
+          return <ScheduleTabViewComponent key={key} not_mine schedules={item} />
+        }
+          
+      }else{
+        return <MessageBubble key={key} not_mine text={item.text} />;
       }  
-      return <MessageBubble key={key} not_mine text={item.text} />;
+    
     });
 
     return (
@@ -629,21 +651,23 @@ class MessageBot extends React.Component {
               <Text style={styles.textOnline}>Online</Text>
             </View>
           </View>
-          <View style={styles.body}>
+        
+          <SafeAreaView  style={styles.body}>
             <ScrollView
               showsVerticalScrollIndicator={false}
               style={styles.scrollView}
-              ref={ref => {
-                this.scrollView = ref;
-              }}
-              onContentSizeChange={() =>
-                this.scrollView.scrollToEnd({animated: true})
-              }>
-              {
-              renderMessage
-              }
+               ref={ref => {
+                 this.scrollView = ref;
+               }}
+               onContentSizeChange={() =>
+                 this.scrollView.scrollToEnd({animated: true})
+               }
+              >
+                {  renderMessage }
+                     
             </ScrollView>
-          </View>
+            </SafeAreaView>
+         
           <View style={styles.flatList}>
             <FlatListHintMessage />
           </View>

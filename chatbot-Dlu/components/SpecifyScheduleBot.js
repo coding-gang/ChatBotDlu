@@ -131,4 +131,5 @@ const styles = StyleSheet.create({
   paddingHorizontal: moderateScale(5, 2),
   paddingTop: moderateScale(5, 2),
   }
+
 });

@@ -4,6 +4,7 @@ import Agenda from 'react-native-vector-icons/AntDesign';
 import {Calendar} from 'react-native-calendars';
 import {LocaleConfig} from 'react-native-calendars';
 import { connect } from "react-redux";
+import Toast from 'react-native-simple-toast';
 const CalendarComponent = (props) =>{
 
     LocaleConfig.locales['fr'] = {
@@ -17,6 +18,9 @@ LocaleConfig.defaultLocale = 'fr';
 const [isModalVisible,setModalVisible] = useState(false);
 const [animation,setAnimation] =useState(new Animated.Value(0));
 const [day, setday] = useState('');
+const [dayarr, setdayarr] = useState([]);
+const [dayobj, setdayobj] = useState({});
+let [dayData, setdayData] = useState([]);
 const {height} = Dimensions.get("window");
 const toggleModal = () =>{
     setModalVisible(!isModalVisible);
@@ -54,24 +58,42 @@ Date.prototype.getWeek = function (dowOffset) {
    setTimeout(() => {
     setModalVisible(false);
     setday('');
+    dayarr.splice(0,dayarr.length); 
+    setdayarr(dayarr);
+    setdayobj({})
    }, 3000); 
     props.dispatch({
       type:"NO_SEND_CALENDAR"
     })
   }
-const getDate = (date) =>{
+const getDate = () =>{
   //{"dateString": "2021-09-22", "day": 22, "month": 9, "timestamp": 1632268800000, "year": 2021}
-  const message={dayName:'',week:'',month:'',year:''}
-  message.week= new Date(date.year,date.month-1,date.day).getWeek()+1;
-  message.month = date.month;
-  message.year = `${date.year}-${date.year +1}`;
-  const d = new Date(date.dateString);
-  message.dayName = arrDayNames[d.getDay()];
- // {mine:true, data:{dayName:'',week:'',year:''},text:''}
-  props.dataCalendar.data = message;
-  const mesUser= `TKB ngày ${date.day} tháng ${date.month} năm ${date.year}`
-  props.dataCalendar.textCalendar = mesUser;
-  sendCalendar();
+
+  const arrDaySchedule = [];
+      dayarr.forEach((date)=>{
+        let message={dayName:'',week:'',month:'',year:''}
+        message.week= new Date(date.year,date.month-1,date.day).getWeek()+1;
+        message.month = date.month;
+        message.year = `${date.year}-${date.year +1}`;
+        const d = new Date(date.dateString);
+        message.dayName = arrDayNames[d.getDay()];
+       // props.dataCalendar.data = message;
+        const mesUser= `T.${date.month} ${date.day}, ${date.year}`
+        let objScheudule ={
+            text:mesUser,
+            data:message
+        }
+        arrDaySchedule.push(objScheudule); 
+      })
+      dayData =[...arrDaySchedule]
+      setdayData(dayData);
+      setTimeout(() => {
+
+       props.dataCalendar.data = dayData;
+         sendCalendar();
+      }, 1000);
+
+
 }
 
   const openModal =animation.interpolate({
@@ -114,9 +136,28 @@ const getDate = (date) =>{
     transform:[
       {scale:openModal},
      {translateY:saveModal}
-    ]
-       
+    ]  
   };
+
+  const setDay =(day,type)=>{
+    const isExistItem = dayarr.findIndex(item => item.dateString === day.dateString);
+     if(isExistItem ===-1){
+        dayarr.length === 7 ?
+        Toast.show('Tối đa chọn 7 ngày!', Toast.SHORT) :
+        dayarr.push(day)
+     }else{
+       if(type === 'onpress'){
+        dayarr.splice(isExistItem,1) 
+       }
+     } 
+     setdayarr(dayarr)
+     let objtest ={};
+   dayarr.forEach((el,key)=>{
+        objtest[el.dateString] = {selected: true, marked: true, selectedColor: '#6b0080'}            
+   })
+   setdayobj(objtest)
+   if(type === 'longpress') getDate()
+ }
 
     return(
            
@@ -141,12 +182,12 @@ const getDate = (date) =>{
                               pagingEnabled={true}                
                               horizontal={true} 
                               calendarWidth={320}                   
-                              markedDates={{
-                                [day]: { selected: true,  marked: true},
-                               
-                                }}
-                              onDayPress ={day => setday(day.dateString)}
-                              onDayLongPress={(day) =>{getDate(day)}}
+                              markedDates= {dayobj} 
+                              onDayPress ={day =>{
+                                setDay(day,'onpress')
+                              }
+                              }
+                              onDayLongPress={(day) =>{setDay(day,'longpress')}}
                              theme={{
                                backgroundColor:'#fffff',
                                textMonthFontWeight: 'bold',
