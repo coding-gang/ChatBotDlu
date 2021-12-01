@@ -117,6 +117,9 @@ import { SwipeListView } from 'react-native-swipe-list-view';
                 previewOpenDelay={3000}
                 onRowDidOpen={onRowDidOpen}
             />
+             <Text style={styles.messageConfirm}>
+                 Bạn muốn xem thời khóa biểu với mã số của bạn?
+             </Text>
              <View style={styles.touchView}>     
              <TouchableOpacity style={styles.touch} onPress={()=> dispatch(callSchedule())}>
              <Text style={styles.textItem}>đúng</Text>
@@ -225,5 +228,14 @@ const styles = StyleSheet.create({
         padding:8,
         width:100
       },
+      messageConfirm:{
+        marginTop:15,
+        color: "white",
+        marginLeft:10,
+        borderColor: "white",
+        backgroundColor: "#272C3A",
+        fontSize:15,
+        padding:8
+      }
 
 });

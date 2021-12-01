@@ -89,8 +89,10 @@ class MessageBot extends React.Component {
     });
     this.socket.on('send-schedule', data => {
       if (Array.isArray(data)) {
+      //  console.log(data);
         this.state.arrMessage.splice(-1,1);
           const messageBots =ScheduleTableView(data);
+          console.log(messageBots);
           this.renderFromBotTable(messageBots);
        // const messageBots = renderSchedule(data);
         // messageBots.forEach(e => {
@@ -318,10 +320,10 @@ class MessageBot extends React.Component {
         });
         if (arrBotFromMess.length > 0) {
           const hasWaiting = arrBotFromMess[arrBotFromMess.length - 1].text;
-          if (hasWaiting.trim() == 'Bạn đợi tí...!') {
-            Toast.show('Bạn hãy đợi trong giây lát khi có kết quả', Toast.LONG);
-            return state;
-          }
+          // if (hasWaiting.trim() == 'Bạn đợi tí...!') {
+          //   Toast.show('Bạn hãy đợi trong giây lát khi có kết quả', Toast.LONG);
+          //   return state;
+          // }
         }
         return state.map(e => {
           if (e.id === action.id) {
@@ -374,13 +376,13 @@ class MessageBot extends React.Component {
           if (arrBotFromMess.length > 0) {
             const hasWaiting = arrBotFromMess[arrBotFromMess.length - 1].text;
 
-            if (hasWaiting.trim() == 'Bạn đợi tí...!') {
-              Toast.show(
-                'Bạn hãy đợi trong giây lát khi có kết quả',
-                Toast.LONG,
-              );
-              return {mine: state.mine, text: state.text};
-            }
+            // if (hasWaiting.trim() == 'Bạn đợi tí...!') {
+            //   Toast.show(
+            //     'Bạn hãy đợi trong giây lát khi có kết quả',
+            //     Toast.LONG,
+            //   );
+            //   return {mine: state.mine, text: state.text};
+            // }
           }
           this.renderFromUser(state.mine, mesageUser);
           // Delete MessageBot
@@ -513,12 +515,12 @@ class MessageBot extends React.Component {
  }
  const sendCalendarToServer = (mssv , data) =>{
   if (this.socket.connected) {
-    // this.socket.emit('scheduleWeek', {
-    //   mssv: mssv,
-    //   dataCalendar:data
-    // });
-    console.log(data);
-  //  resetStateCalendar();
+    this.socket.emit('scheduleWeek', {
+      mssv: mssv,
+      dataCalendar:data
+    });
+   // console.log(data);
+    resetStateCalendar();
   } else {
     Toast.show('Bot dlu không thể kết nối tới máy chủ', Toast.LONG);
   }
@@ -542,11 +544,10 @@ class MessageBot extends React.Component {
                 if(isnum){
                   if(numberMSSV.length === 7){
                    this.setState({mssv:numberMSSV});
-                   console.log(this.state.dataSpecifySchedule);
-                  //  this.socket.emit('scheduleWeek', {
-                  //   mssv: numberMSSV,
-                  //   dataCalendar: this.state.dataSpecifySchedule
-                  // });
+                   this.socket.emit('scheduleWeek', {
+                    mssv: numberMSSV,
+                    dataCalendar: this.state.dataSpecifySchedule
+                  });
                   this.setState({isInputMssv:false});               
                   resetStateCalendar();
                   }else{
@@ -629,12 +630,19 @@ class MessageBot extends React.Component {
         return <SpecifyScheduleBot key={key} not_mine text={item.text} />;
       }
       else if(Array.isArray(item)){
-        if( item.length >0 && item[0].hasOwnProperty('data')){
-          return <ScheduleListCalendar key={key} data={item}/>
-        }else{
-          return <ScheduleTabViewComponent key={key} not_mine schedules={item} />
-        }
-          
+          if(item.length >0 &&item[0].hasOwnProperty('data')){
+            return <ScheduleListCalendar key={key} data={item}/>
+          }else{
+                const itemNotEmpty=   item.filter((el)=>{
+                       return  el[Object.keys(el)[0]].length !==0;
+                   }
+                   )
+                   if(itemNotEmpty.length >0){
+                    return <ScheduleTabViewComponent key={key} not_mine schedules={item} />
+                   }else{
+                    return <MessageBubble key={key} not_mine text={'Không có thời khóa biểu học!'} />;
+                   }
+          }    
       }else{
         return <MessageBubble key={key} not_mine text={item.text} />;
       }  

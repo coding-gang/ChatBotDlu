@@ -9,7 +9,6 @@ import { ScheduleComponent } from "../entities/ScheduleComponent";
    const NO_CLASS ="không có tiết";
    
 export function ScheduleTableView(data) {
-
         const [, ...filterData] = [...data];
         const arrMessage = [];
       
