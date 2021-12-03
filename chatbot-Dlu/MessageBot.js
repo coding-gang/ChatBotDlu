@@ -491,11 +491,17 @@ class MessageBot extends React.Component {
             }
             // check is mssv contain in string
             const matches = mesageUser.match(/\d+/g);
+            console.log("----------------------------------------------------------------------")
             console.log(matches)
-            if (matches != null && matches[0].length >3) {
+            if (matches != null &&  matches[0].length >3) {
               this.processText(mesageUser);
             } else {
-              this.SendScheduleBot(mesageUser);
+                if(matches != null && parseInt(matches[0]) >=13 ){
+                  this.renderFromBot('Tháng không phù hợp!');   
+                }else{
+                  this.SendScheduleBot(mesageUser);
+                }
+             
             }
           }
         }
