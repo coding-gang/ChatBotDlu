@@ -5,6 +5,7 @@ import PagerView from 'react-native-pager-view';
 import ScheduleRouteComponent from './ScheduleRouteComponent';
 import { moderateScale } from "react-native-size-matters";
   export default function ScheduleTabViewComponent({schedules}) {
+
     const [routes, setarrRoutes] = React.useState([]);
     
     const [index, setIndex] = React.useState(0);
@@ -26,7 +27,7 @@ import { moderateScale } from "react-native-size-matters";
 
 
     const initTableView =(schedules)=>{
-       
+
          const tmpArr =[]
          const tmpItem = [];
          schedules = schedules.filter(el => el[Object.keys(el)[0]].length !==0)
@@ -75,8 +76,10 @@ import { moderateScale } from "react-native-size-matters";
         onIndexChange={setIndex}
         initialLayout={{ height: layout.height }}
         renderTabBar={props => <TabBar {...props}
-        indicatorStyle={{ backgroundColor: '#5E56BD' }}
-        style={{backgroundColor: '#272C3A'}}/>}
+        indicatorStyle={{ backgroundColor: 'white'}}
+        style={{backgroundColor: '#5E56BD',
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10}}/>}
       />
       </Animated.View>
     

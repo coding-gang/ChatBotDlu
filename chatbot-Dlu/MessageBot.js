@@ -33,6 +33,7 @@ import {ScheduleTableView} from './module/ScheduleTableViewModule';
 import SpecifyScheduleBot from './components/SpecifyScheduleBot';
 import ScheduleTabViewComponent from './components/ScheduleTabViewComponent';
 import ScheduleListCalendar from './components/swipeToDeleteScheduleComponent';
+import ScheduleMonthComponent from './components/scheduleMonthComponent'
 import {
   getDataStorage,
   setDataStorage,
@@ -89,15 +90,23 @@ class MessageBot extends React.Component {
     });
     this.socket.on('send-schedule', data => {
       if (Array.isArray(data)) {
-      //  console.log(data);
-        this.state.arrMessage.splice(-1,1);
-          const messageBots =ScheduleTableView(data);
-          console.log(messageBots);
-          this.renderFromBotTable(messageBots);
-       // const messageBots = renderSchedule(data);
-        // messageBots.forEach(e => {
-        //   this.renderFromBot(e.text);
-        // });
+        console.log(data);
+       const indexWaiter = this.state.arrMessage.findIndex(el => el.text === 'Bạn đợi tí...!');
+       if(indexWaiter !== -1){
+        this.state.arrMessage.splice(indexWaiter,1);
+       } 
+            if(Array.isArray(data[0])){
+              const arrScheduleMonth =[];
+              data.forEach((schedules)=>{
+                      const messageBots =ScheduleTableView(schedules);
+                      arrScheduleMonth.push(messageBots);
+                     })
+                     this.renderFromBotTable(arrScheduleMonth);
+            }else{
+              const messageBots =ScheduleTableView(data);
+              this.renderFromBotTable(messageBots);
+            }
+       
       } else {
         this.renderFromBot(data);
       }
@@ -482,7 +491,8 @@ class MessageBot extends React.Component {
             }
             // check is mssv contain in string
             const matches = mesageUser.match(/\d+/g);
-            if (matches != null) {
+            console.log(matches)
+            if (matches != null && matches[0].length >3) {
               this.processText(mesageUser);
             } else {
               this.SendScheduleBot(mesageUser);
@@ -637,7 +647,25 @@ class MessageBot extends React.Component {
                        return  el[Object.keys(el)[0]].length !==0;
                    }
                    )
-                   if(itemNotEmpty.length >0){
+                   if(itemNotEmpty.length >0 && Array.isArray(item[0])){
+                    const itemNotEmptyMonth= [];
+                      item.forEach((el)=>{
+                            console.log(el);
+                      const scheduleNotEmpty=  el.filter((obj)=>{
+                               return obj[Object.keys(obj)[0]].length !==0;
+                      })
+                                 if(scheduleNotEmpty.length > 0){
+                                  itemNotEmptyMonth.push(el)
+                                 }
+                      })
+                          if(itemNotEmptyMonth.length >0){
+                            return <ScheduleMonthComponent key={key} schedules={item} />
+                         }else{
+                          return <MessageBubble key={key} not_mine text={'Không có thời khóa biểu học!'} />;
+                         }
+                           
+                   }
+                   else if(itemNotEmpty.length >0){
                     return <ScheduleTabViewComponent key={key} not_mine schedules={item} />
                    }else{
                     return <MessageBubble key={key} not_mine text={'Không có thời khóa biểu học!'} />;

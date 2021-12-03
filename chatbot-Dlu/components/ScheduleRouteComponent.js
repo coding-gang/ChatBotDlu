@@ -22,8 +22,10 @@ export default function ScheduleRouteComponent({item}) {
 }
 const styles = StyleSheet.create({
   cloudMine: {
-    backgroundColor: "black",
-    paddingLeft:10
+    backgroundColor: "#272C3A",
+    paddingLeft:10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
   },
   text: {
     color: "white",
